@@ -8,11 +8,11 @@ function main(): void {
   canvas.attach(document.body);
   canvas.clear('#000');
 
-  const map = new GscWorldMap(0, 100, 100);
+  const map = new GscWorldMap();
 
   // @todo wait for tileset to load before drawing
   setTimeout(() => {
-    map.render(canvas, { x: 20, y: 20 }, { x: 0, y: 0, width: 50, height: 30 });
+    map.render(canvas, { x: 0, y: 0 }, { x: 0, y: 0, width: 100, height: 100 });
   });
 }
 

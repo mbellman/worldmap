@@ -1,21 +1,20 @@
-import { Area, Point } from './types';
+import { Area, Point, Size } from './types';
 
 /**
  * @internal
  */
-type TilesetConfig<T extends number> = {
+interface TileSetConfig<T extends number> {
   url: string,
-  tileSize: {
-    width: number,
-    height: number
-  },
+  tileSize: Size,
   tiles: Record<T, Point>
-};
+}
 
-export default class Tileset<T extends number> {
+export default class TileSet<T extends number> {
+  private config: TileSetConfig<T>;
   private image: HTMLImageElement;
 
-  public constructor(private config: TilesetConfig<T>) {
+  public constructor(config: TileSetConfig<T>) {
+    this.config = config;
     this.image = new Image(0, 0);
     this.image.src = config.url;
   }
@@ -24,9 +23,13 @@ export default class Tileset<T extends number> {
     return this.image;
   }
 
-  public getTileArea(name: T): Area {
+  public getTileSize(): Size {
+    return this.config.tileSize;
+  }
+
+  public getTileArea(tileId: T): Area {
     const { tileSize: { width, height }, tiles } = this.config;
-    const { x, y } = tiles[name];
+    const { x, y } = tiles[tileId];
 
     return {
       x,

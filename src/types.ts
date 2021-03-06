@@ -3,7 +3,9 @@ export interface Point {
   y: number;
 }
 
-export interface Area extends Point {
+export interface Size {
   width: number;
   height: number;
 }
+
+export interface Area extends Point, Size {}

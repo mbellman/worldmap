@@ -1,57 +1,16 @@
 import Canvas from '../canvas';
+import TileMap from '../tilemap';
+import TileSet from '../tileset';
 import { Area, Point } from '../types';
-
-/**
- * @internal
- */
-class TileMap {
-  private tiles: number[];
-  private width: number;
-
-  public constructor(width: number, height: number) {
-    this.tiles = new Array(width * height).fill(0);
-    this.width = width;
-  }
-
-  public get size(): { width: number, height: number } {
-    return {
-      width: this.width,
-      height: this.tiles.length / this.width
-    };
-  }
-
-  public getTile(point: Point): number {
-    const index = point.y * this.width + point.x;
-
-    if (index >= this.tiles.length) {
-      return -1;
-    }
-
-    return this.tiles[index];
-  }
-
-  public getTiles(): ReadonlyArray<number> {
-    return this.tiles;
-  }
-
-  public setTile(point: Point, tileType: number): void {
-    const index = point.y * this.width + point.x;
-
-    if (index >= this.tiles.length) {
-      return;
-    }
-
-    this.tiles[index] = tileType;
-  }
-}
 
 export interface Modification<T> {
   position: Point;
   tile: T;
 }
 
-export default abstract class AbstractWorldMap<T> {
+export default abstract class AbstractWorldMap<T extends number> {
   protected tileMap: TileMap;
+  protected tileSet: TileSet<T>;
   private modifications: Modification<T>[] = [];
 
   public constructor(seed: number, width: number, height: number) {
@@ -74,7 +33,26 @@ export default abstract class AbstractWorldMap<T> {
     return this.modifications;
   }
 
-  public abstract render(canvas: Canvas, offset: Point, mapArea: Area): void;
+  public render(canvas: Canvas, offset: Point, mapArea: Area): void {
+    const { width: tileWidth, height: tileHeight } = this.tileSet.getTileSize();
+
+    for (let y = 0; y < mapArea.height; y++) {
+      for (let x = 0; x < mapArea.width; x++) {
+        const tile = this.tileMap.getTile({ x, y }) as T;
+
+        canvas.blit(
+          this.tileSet.getImage(),
+          this.tileSet.getTileArea(tile),
+          {
+            x: offset.x + x * tileWidth,
+            y: offset.y + y * tileHeight,
+            width: tileWidth,
+            height: tileHeight
+          }
+        );
+      }
+    }
+  }
 
   protected abstract buildWorldMap(): void;
 
