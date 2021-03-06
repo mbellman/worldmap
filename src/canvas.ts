@@ -1,3 +1,5 @@
+import { Bounds } from './types';
+
 export default class Canvas {
   private element: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -24,6 +26,14 @@ export default class Canvas {
 
   public clear(color: string = '#fff'): void {
     this.ctx.fillStyle = color;
+
     this.ctx.fillRect(0, 0, this.width, this.height);
+  }
+
+  public blit(image: HTMLImageElement, source: Bounds, dest: Bounds): void {
+    this.ctx.drawImage(image,
+      source.x, source.y, source.width, source.height,
+      dest.x, dest.y, dest.width, dest.height
+    );
   }
 }
