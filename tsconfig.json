@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "amd",
+    "outFile": "build/worldmap.js",
+    "experimentalDecorators": true,
+    "noEmitOnError": true,
+    "noImplicitReturns": true
+  },
+  "files": ["src/index.ts"]
+}

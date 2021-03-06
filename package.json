@@ -1,0 +1,27 @@
+{
+  "name": "worldmap",
+  "version": "1.0.0",
+  "description": "A 2D world map editor.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node build.js && tsc --watch",
+    "build": "tsc && node build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mbellman/worldmap.git"
+  },
+  "author": "Malcolm Bellman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mbellman/worldmap/issues"
+  },
+  "homepage": "https://github.com/mbellman/worldmap#readme",
+  "devDependencies": {
+    "almond": "^0.3.3",
+    "fs-extra": "^9.1.0",
+    "minify": "^7.0.1",
+    "typescript": "^4.2.3"
+  }
+}
