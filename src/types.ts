@@ -3,7 +3,7 @@ export interface Point {
   y: number;
 }
 
-export interface Bounds extends Point {
+export interface Area extends Point {
   width: number;
   height: number;
 }

@@ -1,4 +1,4 @@
-import { Bounds } from './types';
+import { Area } from './types';
 
 export default class Canvas {
   private element: HTMLCanvasElement;
@@ -30,7 +30,7 @@ export default class Canvas {
     this.ctx.fillRect(0, 0, this.width, this.height);
   }
 
-  public blit(image: HTMLImageElement, source: Bounds, dest: Bounds): void {
+  public blit(image: HTMLImageElement, source: Area, dest: Area): void {
     this.ctx.drawImage(image,
       source.x, source.y, source.width, source.height,
       dest.x, dest.y, dest.width, dest.height

@@ -2,10 +2,12 @@
   "compilerOptions": {
     "target": "es5",
     "module": "amd",
+    "lib": ["ES2015", "DOM"],
     "outFile": "build/worldmap.js",
     "experimentalDecorators": true,
     "noEmitOnError": true,
     "noImplicitReturns": true
   },
-  "files": ["src/index.ts"]
+  "files": ["src/index.ts"],
+  "include": ["src/**/*"]
 }

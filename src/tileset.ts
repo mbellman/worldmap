@@ -1,9 +1,9 @@
-import { Point, Bounds } from './types';
+import { Area, Point } from './types';
 
 /**
  * @internal
  */
-type TilesetConfig<T extends string> = {
+type TilesetConfig<T extends number> = {
   url: string,
   tileSize: {
     width: number,
@@ -12,10 +12,7 @@ type TilesetConfig<T extends string> = {
   tiles: Record<T, Point>
 };
 
-/**
- * @internal
- */
-class Tileset<T extends string> {
+export default class Tileset<T extends number> {
   private image: HTMLImageElement;
 
   public constructor(private config: TilesetConfig<T>) {
@@ -27,7 +24,7 @@ class Tileset<T extends string> {
     return this.image;
   }
 
-  public getTile(name: T): Bounds {
+  public getTileArea(name: T): Area {
     const { tileSize: { width, height }, tiles } = this.config;
     const { x, y } = tiles[name];
 
@@ -39,14 +36,3 @@ class Tileset<T extends string> {
     };
   }
 }
-
-export const gsc = new Tileset({
-  url: './assets/gsc-tileset.png',
-  tileSize: {
-    width: 16,
-    height: 16
-  },
-  tiles: {
-    grass: { x: 0, y: 16 }
-  }
-});

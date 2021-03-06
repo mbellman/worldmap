@@ -1,5 +1,5 @@
 import Canvas from './canvas';
-import { gsc } from './tilesets';
+import GscWorldMap from './worldmaps/GscWorldMap';
 
 function main(): void {
   const { innerWidth: width, innerHeight: height } = window;
@@ -8,9 +8,11 @@ function main(): void {
   canvas.attach(document.body);
   canvas.clear('#000');
 
-  // @todo wait for tilesets to load before drawing
+  const map = new GscWorldMap(0, 100, 100);
+
+  // @todo wait for tileset to load before drawing
   setTimeout(() => {
-    canvas.blit(gsc.getImage(), gsc.getTile('grass'), { x: 20, y: 20, width: 16, height: 16 });
+    map.render(canvas, { x: 20, y: 20 }, { x: 0, y: 0, width: 50, height: 30 });
   });
 }
 
