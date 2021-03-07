@@ -1,4 +1,5 @@
 import Canvas from '../canvas';
+import RNG from '../rng';
 import TileMap from '../tilemap';
 import TileSet from '../tileset';
 import { Area, Point } from '../types';
@@ -12,8 +13,10 @@ export default abstract class AbstractWorldMap<T extends number> {
   protected tileMap: TileMap;
   protected tileSet: TileSet<T>;
   private modifications: Modification<T>[] = [];
+  private rng: RNG;
 
   public constructor(seed: number, width: number, height: number) {
+    this.rng = new RNG(seed.toString());
     this.tileMap = new TileMap(width, height);
 
     this.buildWorldMap();
@@ -55,6 +58,10 @@ export default abstract class AbstractWorldMap<T extends number> {
   }
 
   protected abstract buildWorldMap(): void;
+
+  protected random(low: number, high: number): number {
+    return low + Math.floor(this.rng.random() * (high - low + 1));
+  }
 
   private getModificationIndexByPosition(position: Point): number {
     return this.modifications.findIndex(modification => (

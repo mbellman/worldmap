@@ -6,10 +6,12 @@ export default class Canvas {
 
   public constructor(width: number, height: number) {
     this.element = document.createElement('canvas');
-    this.ctx = this.element.getContext('2d');
 
     this.element.width = width;
     this.element.height = height;
+
+    this.ctx = this.element.getContext('2d');
+    this.ctx.imageSmoothingEnabled = false;
   }
 
   public get height() {
