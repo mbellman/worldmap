@@ -1,5 +1,5 @@
 import AbstractWorldMap, { Modification } from './AbstractWorldMap';
-import TileSet from '../tileset';
+import TileSet from '../TileSet';
 import { Point } from '../types';
 
 export enum GscTile {

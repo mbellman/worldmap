@@ -1,7 +1,7 @@
-import Canvas from '../canvas';
-import RNG from '../rng';
-import TileMap from '../tilemap';
-import TileSet from '../tileset';
+import Canvas from '../Canvas';
+import RNG from '../RNG';
+import TileMap from '../TileMap';
+import TileSet from '../TileSet';
 import { Area, Point } from '../types';
 import { clamp } from '../utilities';
 

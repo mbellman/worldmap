@@ -1,4 +1,4 @@
-import Canvas from './canvas';
+import Canvas from './Canvas';
 import GscWorldMap from './worldmaps/GscWorldMap';
 import { Point, Size } from './types';
 
