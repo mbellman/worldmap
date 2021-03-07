@@ -1,5 +1,6 @@
 import AbstractWorldMap, { Modification } from './AbstractWorldMap';
 import TileSet from '../tileset';
+import { Point } from '../types';
 
 export enum GscTile {
   GRASS = 0,
@@ -10,12 +11,14 @@ export enum GscTile {
   ROUND_SHRUB = 5,
   LEDGE_BOTTOM_MIDDLE = 6,
   LEDGE_BOTTOM_LEFT = 7,
-  LEDGE_BOTTOM_RIGHT = 8
+  LEDGE_BOTTOM_RIGHT = 8,
+  TREE_BASE = 9,
+  TREE_TOP = 10
 }
 
 export default class GscWorldMap extends AbstractWorldMap<GscTile> {
-  public constructor() {
-    super(0, 100, 100);
+  public constructor(seed: number, width: number, height: number) {
+    super(seed, width, height);
 
     this.tileSet = new TileSet({
       url: './assets/gsc-tileset.png',
@@ -32,7 +35,9 @@ export default class GscWorldMap extends AbstractWorldMap<GscTile> {
         [GscTile.ROUND_SHRUB]: { x: 48, y: 16 },
         [GscTile.LEDGE_BOTTOM_MIDDLE]: { x: 96, y: 80 },
         [GscTile.LEDGE_BOTTOM_LEFT]: { x: 80, y: 80 },
-        [GscTile.LEDGE_BOTTOM_RIGHT]: { x: 112, y: 80 }
+        [GscTile.LEDGE_BOTTOM_RIGHT]: { x: 112, y: 80 },
+        [GscTile.TREE_BASE]: { x: 224, y: 48 },
+        [GscTile.TREE_TOP]: { x: 224, y: 32 }
       }
     });
   }
@@ -40,10 +45,22 @@ export default class GscWorldMap extends AbstractWorldMap<GscTile> {
   protected buildWorldMap(): void {
     const { width, height } = this.tileMap.size;
 
+    // Generate landscape
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         this.tileMap.setTile({ x, y }, this.random(0, 6));
       }
+    }
+
+    // Generate trees
+    for (let i = 0; i < 2000; i++) {
+      const position: Point = {
+        x: this.random(0, width),
+        y: this.random(0, height)
+      };
+
+      this.tileMap.setTile(position, GscTile.TREE_BASE);
+      this.tileMap.setTile({ x: position.x, y: position.y - 1 }, GscTile.TREE_TOP);
     }
   }
 }
