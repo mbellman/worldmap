@@ -26,16 +26,20 @@ export default class Canvas {
     target.appendChild(this.element);
   }
 
+  public blit(image: CanvasImageSource, source: Area, dest: Area): void {
+    this.ctx.drawImage(image,
+      source.x, source.y, source.width, source.height,
+      dest.x, dest.y, dest.width, dest.height
+    );
+  }
+
   public clear(color: string = '#fff'): void {
     this.ctx.fillStyle = color;
 
     this.ctx.fillRect(0, 0, this.width, this.height);
   }
 
-  public blit(image: HTMLImageElement, source: Area, dest: Area): void {
-    this.ctx.drawImage(image,
-      source.x, source.y, source.width, source.height,
-      dest.x, dest.y, dest.width, dest.height
-    );
+  public getElement(): Readonly<HTMLCanvasElement> {
+    return this.element;
   }
 }

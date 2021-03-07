@@ -1,3 +1,4 @@
+import Canvas from './Canvas';
 import { Area, Point, Size } from './types';
 
 /**
@@ -10,17 +11,29 @@ interface TileSetConfig<T extends number = number> {
 }
 
 export default class TileSet<T extends number = number> {
+  private canvas: Canvas;
   private config: TileSetConfig<T>;
-  private image: HTMLImageElement;
 
   public constructor(config: TileSetConfig<T>) {
     this.config = config;
-    this.image = new Image(0, 0);
-    this.image.src = config.url;
+
+    const image = new Image();
+
+    image.src = config.url;
+
+    image.onload = () => {
+      this.canvas = new Canvas(image.width, image.height);
+
+      this.canvas.blit(
+        image,
+        { x: 0, y: 0, width: image.width, height: image.height },
+        { x: 0, y: 0, width: image.width, height: image.height }
+      );
+    };
   }
 
-  public getImage(): Readonly<HTMLImageElement> {
-    return this.image;
+  public getImageSource(): Readonly<CanvasImageSource> {
+    return this.canvas.getElement();
   }
 
   public getTileSize(): Readonly<Size> {
