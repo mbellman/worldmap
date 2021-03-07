@@ -23,7 +23,7 @@ export default class TileSet<T extends number> {
     return this.image;
   }
 
-  public getTileSize(): Size {
+  public getTileSize(): Readonly<Size> {
     return this.config.tileSize;
   }
 

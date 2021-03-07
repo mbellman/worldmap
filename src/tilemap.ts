@@ -1,4 +1,4 @@
-import { Point } from './types';
+import { Point, Size } from './types';
 
 export default class TileMap {
   private tiles: number[];
@@ -9,7 +9,7 @@ export default class TileMap {
     this.width = width;
   }
 
-  public get size(): { width: number, height: number } {
+  public get size(): Size {
     return {
       width: this.width,
       height: this.tiles.length / this.width
