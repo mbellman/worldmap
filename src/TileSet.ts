@@ -3,13 +3,13 @@ import { Area, Point, Size } from './types';
 /**
  * @internal
  */
-interface TileSetConfig<T extends number> {
+interface TileSetConfig<T extends number = number> {
   url: string,
   tileSize: Size,
   tiles: Record<T, Point>
 }
 
-export default class TileSet<T extends number> {
+export default class TileSet<T extends number = number> {
   private config: TileSetConfig<T>;
   private image: HTMLImageElement;
 

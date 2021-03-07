@@ -43,7 +43,7 @@ export default class GscWorldMap extends AbstractWorldMap<GscTile> {
   }
 
   protected buildWorldMap(): void {
-    const { width, height } = this.tileMap.size;
+    const { width, height } = this.tileMap.getSize();
 
     // Generate landscape
     for (let y = 0; y < height; y++) {

@@ -9,7 +9,7 @@ export default class TileMap {
     this.width = width;
   }
 
-  public get size(): Size {
+  public getSize(): Size {
     return {
       width: this.width,
       height: this.tiles.length / this.width

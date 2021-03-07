@@ -1,16 +1,14 @@
-import Canvas from '../Canvas';
 import RNG from '../RNG';
 import TileMap from '../TileMap';
 import TileSet from '../TileSet';
-import { Area, Point } from '../types';
-import { clamp } from '../utilities';
+import { Point } from '../types';
 
 export interface Modification<T> {
   position: Point;
   tile: T;
 }
 
-export default abstract class AbstractWorldMap<T extends number> {
+export default abstract class AbstractWorldMap<T extends number = number> {
   protected tileMap: TileMap;
   protected tileSet: TileSet<T>;
   private modifications: Modification<T>[] = [];
@@ -37,31 +35,12 @@ export default abstract class AbstractWorldMap<T extends number> {
     return this.modifications;
   }
 
-  public render(canvas: Canvas, offset: Point, mapArea: Area): void {
-    const { width: tileWidth, height: tileHeight } = this.tileSet.getTileSize();
-    const { width: mapWidth, height: mapHeight } = this.tileMap.size;
+  public getTileMap(): TileMap {
+    return this.tileMap;
+  }
 
-    mapArea.x = clamp(mapArea.x, 0, mapWidth);
-    mapArea.y = clamp(mapArea.y, 0, mapHeight);
-    mapArea.width = clamp(mapArea.width, 0, mapWidth - mapArea.x);
-    mapArea.height = clamp(mapArea.height, 0, mapHeight - mapArea.y);
-
-    for (let y = mapArea.y; y < mapArea.y + mapArea.height; y++) {
-      for (let x = mapArea.x; x < mapArea.x + mapArea.width; x++) {
-        const tile = this.tileMap.getTile({ x, y }) as T;
-
-        canvas.blit(
-          this.tileSet.getImage(),
-          this.tileSet.getTileArea(tile),
-          {
-            x: offset.x + x * tileWidth - mapArea.x * tileWidth,
-            y: offset.y + y * tileHeight - mapArea.y * tileHeight,
-            width: tileWidth,
-            height: tileHeight
-          }
-        );
-      }
-    }
+  public getTileSet(): TileSet<T> {
+    return this.tileSet;
   }
 
   protected abstract buildWorldMap(): void;
