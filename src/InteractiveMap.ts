@@ -19,6 +19,11 @@ export default class InteractiveMap {
 
   public initialize(): void {
     setTimeout(() => this.render(), 50);
+
+    window.addEventListener('resize', () => {
+      this.canvas.setSize(window.innerWidth, window.innerHeight);
+      this.render();
+    });
   
     document.body.addEventListener('mousedown', event => {
       const mouseStart: Point = {
@@ -51,10 +56,8 @@ export default class InteractiveMap {
         document.body.removeEventListener('mouseup', onMouseUp);
         document.body.removeEventListener('mouseleave', onMouseUp);
 
-        this.dragMomentum = {
-          x: this.offset.x - previousOffset.x,
-          y: this.offset.y - previousOffset.y
-        };
+        this.dragMomentum.x = this.offset.x - previousOffset.x;
+        this.dragMomentum.y = this.offset.y - previousOffset.y;
 
         this.decayDragMomentum();
       };
@@ -90,8 +93,8 @@ export default class InteractiveMap {
     const area: Area = {
       x: Math.floor(this.offset.x / tileWidth),
       y: Math.floor(this.offset.y / tileHeight),
-      width: 100,
-      height: 50
+      width: Math.ceil(window.innerWidth / tileWidth) + 1,
+      height: Math.ceil(window.innerHeight / tileHeight) + 1
     };
 
     return {

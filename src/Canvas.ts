@@ -6,12 +6,9 @@ export default class Canvas {
 
   public constructor(width: number, height: number) {
     this.element = document.createElement('canvas');
-
-    this.element.width = width;
-    this.element.height = height;
-
     this.ctx = this.element.getContext('2d');
-    this.ctx.imageSmoothingEnabled = false;
+
+    this.setSize(width, height);
   }
 
   public get height() {
@@ -41,5 +38,12 @@ export default class Canvas {
 
   public getElement(): Readonly<HTMLCanvasElement> {
     return this.element;
+  }
+
+  public setSize(width: number, height: number): void {
+    this.element.width = width;
+    this.element.height = height;
+
+    this.ctx.imageSmoothingEnabled = false;
   }
 }
