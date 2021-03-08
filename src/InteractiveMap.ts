@@ -5,6 +5,7 @@ import { clamp } from './utilities';
 
 export default class InteractiveMap {
   private canvas: Canvas;
+  private dragMomentum: Point = { x: 0, y: 0 };
   private offset: Point = { x: 0, y: 0 };
   private worldMap: AbstractWorldMap<number>;
 
@@ -20,35 +21,66 @@ export default class InteractiveMap {
     setTimeout(() => this.render(), 50);
   
     document.body.addEventListener('mousedown', event => {
-      const start: Point = {
+      const mouseStart: Point = {
         x: event.clientX,
         y: event.clientY
       };
   
       const initialOffset = { ...this.offset };
+      const previousOffset = { ...this.offset };
+
+      this.dragMomentum = { x: 0, y: 0 };
   
-      const handleMouseMove = (e: MouseEvent) => {
-        const delta: Point = {
-          x: e.clientX - start.x,
-          y: e.clientY - start.y
+      const onMouseMove = (e: MouseEvent) => {
+        const mouseDelta: Point = {
+          x: e.clientX - mouseStart.x,
+          y: e.clientY - mouseStart.y
         };
+
+        previousOffset.x = this.offset.x;
+        previousOffset.y = this.offset.y;
   
-        this.offset.x = Math.max(0, initialOffset.x - delta.x);
-        this.offset.y = Math.max(0, initialOffset.y - delta.y);
+        this.offset.x = Math.max(0, initialOffset.x - mouseDelta.x);
+        this.offset.y = Math.max(0, initialOffset.y - mouseDelta.y);
    
         this.render();
       };
   
-      const handleMouseUp = () => {
-        document.body.removeEventListener('mousemove', handleMouseMove);
-        document.body.removeEventListener('mouseup', handleMouseUp);
-        document.body.addEventListener('mouseleave', handleMouseUp);
+      const onMouseUp = () => {
+        document.body.removeEventListener('mousemove', onMouseMove);
+        document.body.removeEventListener('mouseup', onMouseUp);
+        document.body.removeEventListener('mouseleave', onMouseUp);
+
+        this.dragMomentum = {
+          x: this.offset.x - previousOffset.x,
+          y: this.offset.y - previousOffset.y
+        };
+
+        this.decayDragMomentum();
       };
   
-      document.body.addEventListener('mousemove', handleMouseMove);
-      document.body.addEventListener('mouseup', handleMouseUp);
-      document.body.addEventListener('mouseleave', handleMouseUp);
+      document.body.addEventListener('mousemove', onMouseMove);
+      document.body.addEventListener('mouseup', onMouseUp);
+      document.body.addEventListener('mouseleave', onMouseUp);
     });
+  }
+
+  private decayDragMomentum(): void {
+    this.offset.x = Math.max(0, Math.round(this.offset.x + this.dragMomentum.x));
+    this.offset.y = Math.max(0, Math.round(this.offset.y + this.dragMomentum.y));
+
+    this.render();
+
+    this.dragMomentum.x *= 0.9;
+    this.dragMomentum.y *= 0.9;
+
+    if (Math.abs(this.dragMomentum.x) < 0.1 && Math.abs(this.dragMomentum.y) < 0.1) {
+      this.dragMomentum = { x: 0, y: 0 };
+
+      return;
+    }
+
+    requestAnimationFrame(() => this.decayDragMomentum());
   }
 
   private getVisibleMapArea(): Area {
