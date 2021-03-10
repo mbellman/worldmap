@@ -11,6 +11,10 @@ export default class RNG {
     return this.state / Number.MAX_SAFE_INTEGER;
   }
 
+  public randomInRange(low: number, high: number): number {
+    return low + Math.floor(this.random() * (high - low + 1));
+  }
+
   private getInitialState(seed: string): number {
     const length = seed.length;
     const codes: number[] = [];

@@ -19,7 +19,7 @@ export default class TileMap {
   public getTile(point: Point): number {
     const index = point.y * this.width + point.x;
 
-    if (index >= this.tiles.length) {
+    if (index < 0 || index >= this.tiles.length) {
       return -1;
     }
 
@@ -29,7 +29,7 @@ export default class TileMap {
   public setTile(point: Point, tileType: number): void {
     const index = point.y * this.width + point.x;
 
-    if (index >= this.tiles.length) {
+    if (index < 0 || index >= this.tiles.length) {
       return;
     }
 
