@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "module": "amd",
-    "lib": ["ES2015", "DOM"],
+    "lib": ["ES2016", "DOM"],
     "outFile": "build/worldmap.js",
     "experimentalDecorators": true,
     "noEmitOnError": true,
