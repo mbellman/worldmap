@@ -3,30 +3,41 @@ import TileSet from '../TileSet';
 import { Area, Point, Size } from '../types';
 
 export enum GscTile {
-  GRASS = 0,
-  FLOWER_TOP_LEFT_1 = 1,
-  FLOWER_BOTTOM_RIGHT_1 = 2,
-  POKE_GRASS = 3,
-  MINI_TREE = 4,
-  ROUND_SHRUB = 5,
-  LEDGE_BOTTOM_MIDDLE = 6,
-  LEDGE_BOTTOM_LEFT = 7,
-  LEDGE_BOTTOM_RIGHT = 8,
-  TREE_BASE = 9,
-  TREE_TOP = 10,
-  WATER = 11,
-  WATER_GROUND_TOP = 12,
-  WATER_GROUND_TOP_LEFT = 13,
-  WATER_GROUND_TOP_RIGHT = 14,
-  WATER_GROUND_LEFT = 15,
-  WATER_GROUND_RIGHT = 16,
-  WATER_GROUND_DIAGONAL_TOP_LEFT = 17,
-  WATER_GROUND_DIAGONAL_TOP_RIGHT = 18
+  GRASS,
+  FLOWER_TOP_LEFT,
+  FLOWER_BOTTOM_RIGHT,
+  POKE_GRASS,
+  MINI_TREE,
+  ROUND_SHRUB,
+  LEDGE_BOTTOM_MIDDLE,
+  LEDGE_BOTTOM_LEFT,
+  LEDGE_BOTTOM_RIGHT,
+  TREE_BASE,
+  TREE_TOP,
+  WATER,
+  WATER_GROUND_TOP,
+  WATER_GROUND_TOP_LEFT,
+  WATER_GROUND_TOP_RIGHT,
+  WATER_GROUND_LEFT,
+  WATER_GROUND_RIGHT,
+  WATER_GROUND_DIAGONAL_TOP_LEFT,
+  WATER_GROUND_DIAGONAL_TOP_RIGHT,
+  ROCK_SURFACE,
+  ROCK_FACE_TOP,
+  ROCK_FACE_BOTTOM,
+  ROCK_FACE_RIGHT,
+  ROCK_FACE_LEFT,
+  ROCK_FACE_TOP_LEFT,
+  ROCK_FACE_TOP_RIGHT,
+  ROCK_FACE_BOTTOM_LEFT,
+  ROCK_FACE_BOTTOM_RIGHT,
+  ROCK_FACE_CORNER_LEFT,
+  ROCK_FACE_CORNER_RIGHT
 }
 
 const isGroundTile = (tile: GscTile) => (
   tile >= GscTile.GRASS &&
-  tile <= GscTile.FLOWER_BOTTOM_RIGHT_1
+  tile <= GscTile.FLOWER_BOTTOM_RIGHT
 );
 
 const isTreeTile = (tile: GscTile) => (
@@ -37,6 +48,10 @@ const isTreeTile = (tile: GscTile) => (
 const isWaterTile = (tile: GscTile) => (
   tile >= GscTile.WATER &&
   tile <= GscTile.WATER_GROUND_DIAGONAL_TOP_RIGHT
+);
+
+const isRockTile = (tile: GscTile) => (
+  tile >= GscTile.ROCK_SURFACE
 );
 
 export default class GscWorldMap extends AbstractWorldMap<GscTile> {
@@ -51,8 +66,8 @@ export default class GscWorldMap extends AbstractWorldMap<GscTile> {
       },
       tiles: {
         [GscTile.GRASS]: { x: 0, y: 16 },
-        [GscTile.FLOWER_TOP_LEFT_1]: { x: 144, y: 16 },
-        [GscTile.FLOWER_BOTTOM_RIGHT_1]: { x: 144, y: 0 },
+        [GscTile.FLOWER_TOP_LEFT]: { x: 144, y: 16 },
+        [GscTile.FLOWER_BOTTOM_RIGHT]: { x: 144, y: 0 },
         [GscTile.POKE_GRASS]: { x: 176, y: 16 },
         [GscTile.MINI_TREE]: { x: 208, y: 16 },
         [GscTile.ROUND_SHRUB]: { x: 48, y: 16 },
@@ -68,7 +83,18 @@ export default class GscWorldMap extends AbstractWorldMap<GscTile> {
         [GscTile.WATER_GROUND_LEFT]: { x: 320, y: 16 },
         [GscTile.WATER_GROUND_RIGHT]: { x: 288, y: 16 },
         [GscTile.WATER_GROUND_DIAGONAL_TOP_LEFT]: { x: 320, y: 32 },
-        [GscTile.WATER_GROUND_DIAGONAL_TOP_RIGHT]: { x: 288, y: 32 }
+        [GscTile.WATER_GROUND_DIAGONAL_TOP_RIGHT]: { x: 288, y: 32 },
+        [GscTile.ROCK_SURFACE]: { x: 176, y: 48 },
+        [GscTile.ROCK_FACE_BOTTOM]: { x: 176, y: 64 },
+        [GscTile.ROCK_FACE_LEFT]: { x: 160, y: 48 },
+        [GscTile.ROCK_FACE_RIGHT]: { x: 192, y: 48 },
+        [GscTile.ROCK_FACE_TOP]: { x: 176, y: 32 },
+        [GscTile.ROCK_FACE_TOP_LEFT]: { x: 160, y: 32 },
+        [GscTile.ROCK_FACE_TOP_RIGHT]: { x: 192, y: 32 },
+        [GscTile.ROCK_FACE_BOTTOM_LEFT]: { x: 160, y: 64 },
+        [GscTile.ROCK_FACE_BOTTOM_RIGHT]: { x: 192, y: 64 },
+        [GscTile.ROCK_FACE_CORNER_LEFT]: { x: 192, y: 80 },
+        [GscTile.ROCK_FACE_CORNER_RIGHT]: { x: 160, y: 80 }
       }
     });
   }
@@ -80,7 +106,7 @@ export default class GscWorldMap extends AbstractWorldMap<GscTile> {
     for (let y = 0; y < mapSize.height; y++) {
       for (let x = 0; x < mapSize.width; x++) {
         if (this.rng.random() > 0.8) {
-          const flowerTile = this.rng.random() > 0.5 ? GscTile.FLOWER_BOTTOM_RIGHT_1 : GscTile.FLOWER_TOP_LEFT_1;
+          const flowerTile = this.rng.random() > 0.5 ? GscTile.FLOWER_BOTTOM_RIGHT : GscTile.FLOWER_TOP_LEFT;
 
           this.tileMap.setTile({ x, y }, flowerTile);
         }
@@ -88,12 +114,106 @@ export default class GscWorldMap extends AbstractWorldMap<GscTile> {
     }
 
     // Generate water
-    for (let i = 0; i < 5000; i++) {
-      const area = this.createRandomArea([8, 15]);
+    for (let i = 0; i < 500; i++) {
+      // @todo define a routine for random-walk area generation
+      const offset: Point = {
+        x: this.rng.randomInRange(0, this.tileMap.getSize().width),
+        y: this.rng.randomInRange(0, this.tileMap.getSize().height)
+      };
 
-      this.loopOver(area, ({ x, y }) => {
-        this.tileMap.setTile({ x, y }, GscTile.WATER);
-      });
+      for (let j = 0; j < 50; j++) {
+        offset.x += this.rng.randomInRange(-5, 5);
+        offset.y += this.rng.randomInRange(-5, 5);
+
+        const area: Area = {
+          x: offset.x,
+          y: offset.y,
+          width: this.rng.randomInRange(6, 8),
+          height: this.rng.randomInRange(6, 8)
+        };
+
+        this.loopOver(area, ({ x, y }) => {
+          this.tileMap.setTile({ x, y }, GscTile.WATER);
+        });
+      }
+    }
+
+    // Generate rocks
+    for (let i = 0; i < 500; i++) {
+      // @todo define a routine for random-walk area generation
+      const offset: Point = {
+        x: this.rng.randomInRange(0, this.tileMap.getSize().width),
+        y: this.rng.randomInRange(0, this.tileMap.getSize().height)
+      };
+
+      for (let j = 0; j < 25; j++) {
+        offset.x += this.rng.randomInRange(-5, 5);
+        offset.y += this.rng.randomInRange(-5, 5);
+
+        const area: Area = {
+          x: offset.x,
+          y: offset.y,
+          width: this.rng.randomInRange(6, 8),
+          height: this.rng.randomInRange(6, 8)
+        };
+
+        this.loopOver(area, ({ x, y }) => {
+          this.tileMap.setTile({ x, y }, GscTile.ROCK_SURFACE);
+        });
+      }
+    }
+
+    // Generate rock faces
+    for (let y = 0; y < mapSize.height; y++) {
+      for (let x = 0; x < mapSize.width; x++) {
+        const tile = this.tileMap.getTile({ x, y });
+
+        if (tile === GscTile.ROCK_SURFACE) {
+          const topTile = this.tileMap.getTile({ x, y: y - 1 });
+          const bottomTile = this.tileMap.getTile({ x, y: y + 1 });
+          const leftTile = this.tileMap.getTile({ x: x - 1, y });
+          const rightTile = this.tileMap.getTile({ x: x + 1, y });
+          const topLeftTile = this.tileMap.getTile({ x: x - 1, y: y - 1 });
+          const topRightTile = this.tileMap.getTile({ x: x + 1, y: y - 1 });
+          const bottomLeftTile = this.tileMap.getTile({ x: x - 1, y: y + 1 });
+          const bottomRightTile = this.tileMap.getTile({ x: x + 1, y: y + 1 });
+
+          const isRock = {
+            top: isRockTile(topTile),
+            bottom: isRockTile(bottomTile),
+            left: isRockTile(leftTile),
+            right: isRockTile(rightTile),
+            topLeft: isRockTile(topLeftTile),
+            topRight: isRockTile(topRightTile),
+            bottomLeft: isRockTile(bottomLeftTile),
+            bottomRight: isRockTile(bottomRightTile)
+          };
+
+          // @todo define relationships between rock face tiles
+          // and adjacent tiles; generate faces heuristically
+          if (isRock.top && isRock.left && isRock.right && isRock.bottom && !isRock.bottomRight) {
+            this.tileMap.setTile({ x, y }, GscTile.ROCK_FACE_CORNER_LEFT);
+          } else if (isRock.top && isRock.left && isRock.right && isRock.bottom && !isRock.bottomLeft) {
+            this.tileMap.setTile({ x, y }, GscTile.ROCK_FACE_CORNER_RIGHT);
+          } else if (isRock.bottom && isRock.right && !isRock.top && !isRock.left && !isRock.topLeft) {
+            this.tileMap.setTile({ x, y }, GscTile.ROCK_FACE_TOP_LEFT);
+          } else if (isRock.bottom && isRock.left && !isRock.top && !isRock.right && !isRock.topRight) {
+            this.tileMap.setTile({ x, y }, GscTile.ROCK_FACE_TOP_RIGHT);
+          } else if (isRock.top && isRock.right && isRock.topRight && !isRock.left && !isRock.bottom) {
+            this.tileMap.setTile({ x, y }, GscTile.ROCK_FACE_BOTTOM_LEFT);
+          } else if (isRock.top && isRock.left && isRock.topLeft && !isRock.right && !isRock.bottom) {
+            this.tileMap.setTile({ x, y }, GscTile.ROCK_FACE_BOTTOM_RIGHT);
+          } else if (isRock.top && !isRock.bottom) {
+            this.tileMap.setTile({ x, y }, GscTile.ROCK_FACE_BOTTOM);
+          } else if (isRock.right && !isRock.left) {
+            this.tileMap.setTile({ x, y }, GscTile.ROCK_FACE_LEFT);
+          } else if (isRock.left && !isRock.right) {
+            this.tileMap.setTile({ x, y }, GscTile.ROCK_FACE_RIGHT);
+          } else if (isRock.bottom && !isRock.top) {
+            this.tileMap.setTile({ x, y }, GscTile.ROCK_FACE_TOP);
+          }
+        }
+      }
     }
 
     // Generate tree clusters
@@ -105,9 +225,17 @@ export default class GscWorldMap extends AbstractWorldMap<GscTile> {
       for (let y = area.y; y < area.y + area.height; y += 2) {
         for (let x = area.x; x < area.x + area.width && x < mapSize.width; x++) {
           const position: Point = { x, y };
+          const tile = this.tileMap.getTile(position);
+          const topTile = this.tileMap.getTile({ x: position.x, y: position.y - 1 });
 
-          this.tileMap.setTile(position, GscTile.TREE_BASE);
-          this.tileMap.setTile({ x: position.x, y: position.y - 1 }, GscTile.TREE_TOP);
+          if (isGroundTile(tile)) {
+            if (isGroundTile(topTile)) {
+              this.tileMap.setTile(position, GscTile.TREE_BASE);
+              this.tileMap.setTile({ x: position.x, y: position.y - 1 }, GscTile.TREE_TOP);
+            } else {
+              this.tileMap.setTile(position, GscTile.MINI_TREE);
+            }
+          }
         }
       }
     }
@@ -121,8 +249,8 @@ export default class GscWorldMap extends AbstractWorldMap<GscTile> {
 
         if (
           currentTile === GscTile.GRASS ||
-          currentTile === GscTile.FLOWER_BOTTOM_RIGHT_1 ||
-          currentTile === GscTile.FLOWER_TOP_LEFT_1
+          currentTile === GscTile.FLOWER_BOTTOM_RIGHT ||
+          currentTile === GscTile.FLOWER_TOP_LEFT
         ) {
           this.tileMap.setTile({ x, y }, GscTile.POKE_GRASS);
         }
@@ -164,6 +292,8 @@ export default class GscWorldMap extends AbstractWorldMap<GscTile> {
           const topLeftTile = this.tileMap.getTile({ x: x - 1, y: y - 1 });
           const topRightTile = this.tileMap.getTile({ x: x + 1, y: y - 1 });
 
+          // @todo define relationships between water edge tiles
+          // and adjacent tiles; generate edges heuristically
           if (!isWaterTile(topTile)) {
             if (!isWaterTile(leftTile)) {
               this.tileMap.setTile({ x, y }, GscTile.WATER_GROUND_TOP_LEFT);
