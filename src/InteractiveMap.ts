@@ -40,10 +40,10 @@ export default class InteractiveMap {
   }
 
   public initialize(): void {
-    setTimeout(() => {
+    this.worldMap.getTileSet().onload(() => {
       this.render();
       this.renderInitialBufferCanvas();
-    }, 50);
+    });
 
     window.addEventListener('resize', () => {
       this.canvas.setSize(window.innerWidth, window.innerHeight);

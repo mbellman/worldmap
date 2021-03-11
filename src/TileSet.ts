@@ -13,6 +13,8 @@ interface TileSetConfig<T extends number = number> {
 export default class TileSet<T extends number = number> {
   private canvas: Canvas;
   private config: TileSetConfig<T>;
+  private isLoaded: boolean = false;
+  private onloadCallback: () => void;
 
   public constructor(config: TileSetConfig<T>) {
     this.config = config;
@@ -22,6 +24,7 @@ export default class TileSet<T extends number = number> {
     image.src = config.url;
 
     image.onload = () => {
+      this.isLoaded = true;
       this.canvas = new Canvas(image.width, image.height);
 
       this.canvas.blit(
@@ -29,6 +32,10 @@ export default class TileSet<T extends number = number> {
         { x: 0, y: 0, width: image.width, height: image.height },
         { x: 0, y: 0, width: image.width, height: image.height }
       );
+
+      if (this.onloadCallback) {
+        this.onloadCallback();
+      }
     };
   }
 
@@ -50,5 +57,15 @@ export default class TileSet<T extends number = number> {
       width,
       height
     };
+  }
+
+  public onload(callback: () => void): void {
+    console.log('Loaded?', this.isLoaded);
+
+    if (this.isLoaded) {
+      callback();
+    }
+
+    this.onloadCallback = callback;
   }
 }
