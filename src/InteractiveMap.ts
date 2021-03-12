@@ -54,11 +54,24 @@ export default class InteractiveMap {
       this.renderInitialBufferCanvas();
       this.render();
     });
+
+    // @todo clean this up, this is ridiculous. normalize mouse/touch
+    // events properly and contain this somewhere
+    const events = 'ontouchstart' in window
+      ? {
+        mousedown: 'touchstart',
+        mousemove: 'touchmove',
+        mouseup: 'touchend'
+      } : {
+        mousedown: 'mousedown',
+        mousemove: 'mousemove',
+        mouseup: 'mouseup'
+      };
   
-    document.body.addEventListener('mousedown', event => {
+    document.body.addEventListener(events.mousedown, (event: MouseEvent & TouchEvent) => {
       const mouseStart: Point = {
-        x: event.clientX,
-        y: event.clientY
+        x: event.clientX || event.changedTouches[event.changedTouches.length - 1].clientX,
+        y: event.clientY || event.changedTouches[event.changedTouches.length - 1].clientY
       };
   
       const initialOffset = { ...this.offset };
@@ -66,10 +79,10 @@ export default class InteractiveMap {
       this.previousOffset = { ...this.offset };
       this.dragMomentum = { x: 0, y: 0 };
   
-      const onMouseMove = (e: MouseEvent) => {
+      const onMouseMove = (e: MouseEvent & TouchEvent) => {
         const mouseDelta: Point = {
-          x: e.clientX - mouseStart.x,
-          y: e.clientY - mouseStart.y
+          x: (e.clientX || e.changedTouches[event.changedTouches.length - 1].clientX) - mouseStart.x,
+          y: (e.clientY || e.changedTouches[event.changedTouches.length - 1].clientY) - mouseStart.y
         };
 
         this.previousOffset.x = this.offset.x;
@@ -84,8 +97,8 @@ export default class InteractiveMap {
       };
   
       const onMouseUp = () => {
-        document.body.removeEventListener('mousemove', onMouseMove);
-        document.body.removeEventListener('mouseup', onMouseUp);
+        document.body.removeEventListener(events.mousemove, onMouseMove);
+        document.body.removeEventListener(events.mouseup, onMouseUp);
         document.body.removeEventListener('mouseleave', onMouseUp);
 
         this.dragMomentum = this.getLastFrameDelta();
@@ -93,8 +106,8 @@ export default class InteractiveMap {
         this.decayDragMomentum();
       };
   
-      document.body.addEventListener('mousemove', onMouseMove);
-      document.body.addEventListener('mouseup', onMouseUp);
+      document.body.addEventListener(events.mousemove, onMouseMove);
+      document.body.addEventListener(events.mouseup, onMouseUp);
       document.body.addEventListener('mouseleave', onMouseUp);
     });
   }
@@ -118,8 +131,8 @@ export default class InteractiveMap {
 
     this.render();
 
-    this.dragMomentum.x *= 0.9;
-    this.dragMomentum.y *= 0.9;
+    this.dragMomentum.x *= 'ontouchstart' in window ? 0.95 : 0.9;
+    this.dragMomentum.y *= 'ontouchstart' in window ? 0.95 : 0.9;
 
     if (Math.abs(this.dragMomentum.x) < 0.1 && Math.abs(this.dragMomentum.y) < 0.1) {
       this.dragMomentum = { x: 0, y: 0 };

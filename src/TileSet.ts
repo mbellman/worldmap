@@ -60,8 +60,6 @@ export default class TileSet<T extends number = number> {
   }
 
   public onload(callback: () => void): void {
-    console.log('Loaded?', this.isLoaded);
-
     if (this.isLoaded) {
       callback();
     }
