@@ -9,3 +9,8 @@ export interface Size {
 }
 
 export interface Area extends Point, Size {}
+
+export interface Duration {
+  start: number;
+  end: number;
+}
