@@ -14,3 +14,10 @@ export interface Duration {
   start: number;
   end: number;
 }
+
+export enum Direction {
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT
+}
