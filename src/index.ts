@@ -1,12 +1,13 @@
 import GscWorldMap from './worldmaps/GscWorldMap';
-import InteractiveMap from './InteractiveMap';
+import GscGameScene from './gamescenes/GscGameScene';
+import DraggableMap from './DraggableMap';
 import AudioFile from './AudioFile';
 
 function main(): void {
   const gscWorldMap = new GscWorldMap(Date.now(), 1000, 1000);
-  const interactiveMap = new InteractiveMap(gscWorldMap);
+  const gameScene = new GscGameScene(gscWorldMap);
 
-  interactiveMap.initialize();
+  gameScene.initialize();
 
   // const audio = new AudioFile('./assets/route-30.mp3');
 
