@@ -8,7 +8,7 @@ export default class GscGameScene extends AbstractGameScene {
   
   private soundtrack = new Soundtrack({
     route30: {
-      audio: new AudioFile('./assets/route-30.mp3'),
+      audio: new AudioFile('./assets/gsc/route-30.mp3'),
       loop: { start: 5.6722, end: 34.335 }
     }
   });

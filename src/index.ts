@@ -8,11 +8,6 @@ function main(): void {
   const gameScene = new GscGameScene(gscWorldMap);
 
   gameScene.initialize();
-
-  // const audio = new AudioFile('./assets/route-30.mp3');
-
-  // audio.play();
-  // audio.setLoop({ start: 5.6722, end: 34.335 });
 }
 
 main();

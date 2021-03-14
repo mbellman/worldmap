@@ -59,7 +59,7 @@ export default class GscWorldMap extends AbstractWorldMap<GscTile> {
     super(seed, width, height);
 
     this.tileSet = new TileSet({
-      url: './assets/gsc-tileset.png',
+      url: './assets/gsc/tileset.png',
       tileSize: {
         width: 16,
         height: 16
