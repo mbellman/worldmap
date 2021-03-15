@@ -19,6 +19,8 @@ export default class StreamableMap {
   }
 
   public renderInitialView(offset: Point): void {
+    this.offset = { ...offset };
+
     const tileMap = this.worldMap.getTileMap();
     const tileSet = this.worldMap.getTileSet();
     const { width: tileWidth, height: tileHeight } = tileSet.getTileSize();    

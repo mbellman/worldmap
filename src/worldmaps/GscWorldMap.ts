@@ -35,22 +35,22 @@ export enum GscTile {
   ROCK_FACE_CORNER_RIGHT
 }
 
-const isGroundTile = (tile: GscTile) => (
+export const isGroundTile = (tile: GscTile) => (
   tile >= GscTile.GRASS &&
   tile <= GscTile.FLOWER_BOTTOM_RIGHT
 );
 
-const isTreeTile = (tile: GscTile) => (
+export const isTreeTile = (tile: GscTile) => (
   tile === GscTile.TREE_BASE ||
   tile === GscTile.TREE_TOP
 );
 
-const isWaterTile = (tile: GscTile) => (
+export const isWaterTile = (tile: GscTile) => (
   tile >= GscTile.WATER &&
   tile <= GscTile.WATER_GROUND_DIAGONAL_TOP_RIGHT
 );
 
-const isRockTile = (tile: GscTile) => (
+export const isRockTile = (tile: GscTile) => (
   tile >= GscTile.ROCK_SURFACE
 );
 

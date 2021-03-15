@@ -1,9 +1,11 @@
 import AbstractWorldMap from '../worldmaps/AbstractWorldMap';
 import Canvas from '../Canvas';
+import RNG from '../RNG';
 import StreamableMap from '../StreamableMap';
 
 export default abstract class AbstractGameScene {
   protected canvas: Canvas;
+  protected rng: RNG = new RNG(Date.now().toString());
   protected streamableMap: StreamableMap;
   protected worldMap: AbstractWorldMap;
 

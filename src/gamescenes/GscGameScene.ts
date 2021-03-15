@@ -2,7 +2,9 @@ import AbstractGameScene from './AbstractGameScene';
 import AudioFile from '../AudioFile';
 import Soundtrack from '../Soundtrack';
 import Sprite from '../Sprite';
+import { isGroundTile } from '../worldmaps/GscWorldMap';
 import { Direction, Point } from '../types';
+import { clamp } from '../utilities';
 
 /**
  * @internal
@@ -41,6 +43,7 @@ export default class GscGameScene extends AbstractGameScene {
   private direction: Direction = null;
   private movement: Point = { x: 0, y: 0 };
   private offset: Point = { x: 0, y: 0 };
+  private characterPosition: Point = { x: 0, y: 0 };
   private remainingMoves: number = 0;
   
   private soundtrack = new Soundtrack({
@@ -51,9 +54,16 @@ export default class GscGameScene extends AbstractGameScene {
   });
 
   public initialize(): void {
+    this.setStartingPosition();
+
+    // @todo await tileset + character image loading
     this.worldMap.getTileSet().onload(() => {
       this.streamableMap.renderInitialView(this.offset);
       this.streamableMap.renderToCanvas(this.canvas);
+
+      setTimeout(() => {
+        this.character.renderToCanvas(this.canvas, this.getCharacterPixelPosition(), 'down1');
+      });
     });
 
     this.soundtrack.play('route30');
@@ -75,22 +85,40 @@ export default class GscGameScene extends AbstractGameScene {
     return this.remainingMoves > 0;
   }
 
+  private clampOffset(): void {
+    // @todo use correct upper bounds
+    this.offset.x = clamp(this.offset.x, 0, 16000);
+    this.offset.y = clamp(this.offset.y, 0, 16000);
+  }
+
   private getCharacterFrame(): string {
     const direction = this.getMovementDirection();
-    const isHalfStep = Math.floor(this.remainingMoves / 8) % 2 === 0;
+    const isMidStep = this.remainingMoves <= 8;
     const isAlternateYStep = Math.floor(this.offset.y / 16) % 2 === 0;
 
     if (direction === Direction.UP) {
-      return this.isMoving && isHalfStep ? (isAlternateYStep ? 'up2' : 'up3') : 'up1';
+      return this.isMoving && isMidStep ? (isAlternateYStep ? 'up2' : 'up3') : 'up1';
     } else if (direction === Direction.DOWN) {
-      return this.isMoving && isHalfStep ? (isAlternateYStep ? 'down2' : 'down3') : 'down1';
+      return this.isMoving && isMidStep ? (isAlternateYStep ? 'down2' : 'down3') : 'down1';
     } else if (direction === Direction.LEFT) {
-      return this.isMoving && isHalfStep ? 'left2' : 'left1';
+      return this.isMoving && isMidStep ? 'left2' : 'left1';
     } else if (direction === Direction.RIGHT) {
-      return this.isMoving && isHalfStep ? 'right2' : 'right1';
+      return this.isMoving && isMidStep ? 'right2' : 'right1';
     } else {
       return 'down1';
     }
+  }
+
+  private getCharacterPixelPosition(): Point {
+    const characterOffset: Point = {
+      x: this.characterPosition.x * 16 - this.movement.x * this.remainingMoves,
+      y: this.characterPosition.y * 16 - this.movement.y * this.remainingMoves
+    };
+
+    return {
+      x: characterOffset.x - this.offset.x,
+      y: characterOffset.y - this.offset.y
+    };
   }
 
   private getMovementDirection(): Direction {
@@ -105,6 +133,27 @@ export default class GscGameScene extends AbstractGameScene {
     }
   }
 
+  private isValidStartingPosition(position: Point): boolean {
+    return (
+      position.x !== 0 && position.y !== 0 &&
+      isGroundTile(this.worldMap.getTileMap().getTile(position))
+    );
+  }
+
+  private setStartingPosition(): void {
+    while (!this.isValidStartingPosition(this.characterPosition)) {
+      this.characterPosition = {
+        x: this.rng.randomInRange(250, 750),
+        y: this.rng.randomInRange(250, 750)
+      };
+    }
+
+    this.offset.x = this.characterPosition.x * 16 - Math.floor(0.5 * window.innerWidth / 16) * 16;
+    this.offset.y = this.characterPosition.y * 16 - Math.floor(0.5 * window.innerHeight / 16) * 16;
+
+    this.clampOffset();
+  }
+
   private update = () => {
     requestAnimationFrame(this.update);
 
@@ -112,15 +161,20 @@ export default class GscGameScene extends AbstractGameScene {
       this.offset.x += this.movement.x;
       this.offset.y += this.movement.y;
 
+      this.clampOffset();
+
       this.streamableMap.renderNextView(this.offset);
       this.streamableMap.renderToCanvas(this.canvas);
 
       this.remainingMoves--;
 
-      this.character.renderToCanvas(this.canvas, { x: 350, y: 350 }, this.getCharacterFrame());
+      this.character.renderToCanvas(this.canvas, this.getCharacterPixelPosition(), this.getCharacterFrame());
     } else if (this.direction !== null) {
       this.movement = movementMap[this.direction];
       this.remainingMoves = 16;
+
+      this.characterPosition.x += this.movement.x;
+      this.characterPosition.y += this.movement.y;
     }
   };
 }
