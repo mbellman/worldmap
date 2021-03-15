@@ -1,6 +1,7 @@
 import AbstractGameScene from './AbstractGameScene';
 import AudioFile from '../AudioFile';
 import Soundtrack from '../Soundtrack';
+import Sprite from '../Sprite';
 import { Direction, Point } from '../types';
 
 /**
@@ -24,6 +25,19 @@ const movementMap = {
 };
 
 export default class GscGameScene extends AbstractGameScene {
+  private character = new Sprite('./assets/gsc/ethan.png', {
+    up1: { x: 107, y: 4, width: 14, height: 16 },
+    up2: { x: 123, y: 3, width: 14, height: 16 },
+    up3: { x: 138, y: 3, width: 14, height: 16 },
+    down1: { x: 58, y: 4, width: 14, height: 16 },
+    down2: { x: 74, y: 3, width: 14, height: 16 },
+    down3: { x: 90, y: 3, width: 14, height: 16 },
+    left1: { x: 29, y: 4, width:13, height: 16 },
+    left2: { x: 44, y: 3, width:13, height: 16 },
+    right1: { x: 1, y: 4, width: 13, height: 16 },
+    right2: { x: 15, y: 3, width: 13, height: 16 }
+  });
+
   private direction: Direction = null;
   private movement: Point = { x: 0, y: 0 };
   private offset: Point = { x: 0, y: 0 };
@@ -45,7 +59,7 @@ export default class GscGameScene extends AbstractGameScene {
     this.soundtrack.play('route30');
 
     document.addEventListener('keydown', event => {
-      this.direction = directionMap[event.key];
+      this.direction = directionMap[event.key] ?? null;
     });
 
     document.addEventListener('keyup', event => {
@@ -61,6 +75,36 @@ export default class GscGameScene extends AbstractGameScene {
     return this.remainingMoves > 0;
   }
 
+  private getCharacterFrame(): string {
+    const direction = this.getMovementDirection();
+    const isHalfStep = Math.floor(this.remainingMoves / 8) % 2 === 0;
+    const isAlternateYStep = Math.floor(this.offset.y / 16) % 2 === 0;
+
+    if (direction === Direction.UP) {
+      return this.isMoving && isHalfStep ? (isAlternateYStep ? 'up2' : 'up3') : 'up1';
+    } else if (direction === Direction.DOWN) {
+      return this.isMoving && isHalfStep ? (isAlternateYStep ? 'down2' : 'down3') : 'down1';
+    } else if (direction === Direction.LEFT) {
+      return this.isMoving && isHalfStep ? 'left2' : 'left1';
+    } else if (direction === Direction.RIGHT) {
+      return this.isMoving && isHalfStep ? 'right2' : 'right1';
+    } else {
+      return 'down1';
+    }
+  }
+
+  private getMovementDirection(): Direction {
+    if (this.movement.x < 0) {
+      return Direction.LEFT;
+    } else if (this.movement.x > 0) {
+      return Direction.RIGHT;
+    } else if (this.movement.y < 0) {
+      return Direction.UP;
+    } else {
+      return Direction.DOWN;
+    }
+  }
+
   private update = () => {
     requestAnimationFrame(this.update);
 
@@ -72,6 +116,8 @@ export default class GscGameScene extends AbstractGameScene {
       this.streamableMap.renderToCanvas(this.canvas);
 
       this.remainingMoves--;
+
+      this.character.renderToCanvas(this.canvas, { x: 350, y: 350 }, this.getCharacterFrame());
     } else if (this.direction !== null) {
       this.movement = movementMap[this.direction];
       this.remainingMoves = 16;
