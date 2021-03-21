@@ -1,24 +1,36 @@
 import Canvas from './Canvas';
-import { Area, Point } from './types';
+import { Area, Color, Point } from './types';
 
 /**
  * @internal
  */
-type SpriteConfig = Record<string, Area>;
+interface SpriteConfig {
+  alphaColor: Color;
+  frames: Record<string, Area>;
+}
 
 export default class Sprite {
+  private canvas: Canvas;
   private config: SpriteConfig;
-  private image: HTMLImageElement;
 
   public constructor(spritesheet: string, config: SpriteConfig) {
-    this.image = new Image();
-    this.image.src = spritesheet;
     this.config = config;
+
+    const image = new Image();
+    
+    image.src = spritesheet;
+
+    image.onload = () => {
+      this.canvas = new Canvas(image.width, image.height);
+
+      this.canvas.blit(image);
+      this.canvas.setColorToAlpha(config.alphaColor, 0);
+    };
   }
 
   public renderToCanvas(canvas: Canvas, offset: Point, frameName: string): void {
-    const frame = this.config[frameName];
+    const frame = this.config.frames[frameName];
 
-    canvas.blit(this.image, frame, { ...frame, ...offset });
+    canvas.blit(this.canvas.getElement(), frame, { ...frame, ...offset });
   }
 }

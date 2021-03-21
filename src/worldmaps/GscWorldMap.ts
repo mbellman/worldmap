@@ -40,6 +40,11 @@ export const isGroundTile = (tile: GscTile) => (
   tile <= GscTile.FLOWER_BOTTOM_RIGHT
 );
 
+export const isWalkableTile = (tile: GscTile) => (
+  tile >= GscTile.GRASS &&
+  tile <= GscTile.POKE_GRASS
+);
+
 export const isTreeTile = (tile: GscTile) => (
   tile === GscTile.TREE_BASE ||
   tile === GscTile.TREE_TOP

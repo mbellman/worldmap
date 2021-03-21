@@ -2,7 +2,7 @@ import AbstractGameScene from './AbstractGameScene';
 import AudioFile from '../AudioFile';
 import Soundtrack from '../Soundtrack';
 import Sprite from '../Sprite';
-import { isGroundTile } from '../worldmaps/GscWorldMap';
+import { GscTile, isGroundTile, isWalkableTile } from '../worldmaps/GscWorldMap';
 import { Direction, Point } from '../types';
 import { clamp } from '../utilities';
 
@@ -28,19 +28,23 @@ const movementMap = {
 
 export default class GscGameScene extends AbstractGameScene {
   private character = new Sprite('./assets/gsc/ethan.png', {
-    up1: { x: 107, y: 4, width: 14, height: 16 },
-    up2: { x: 123, y: 3, width: 14, height: 16 },
-    up3: { x: 138, y: 3, width: 14, height: 16 },
-    down1: { x: 58, y: 4, width: 14, height: 16 },
-    down2: { x: 74, y: 3, width: 14, height: 16 },
-    down3: { x: 90, y: 3, width: 14, height: 16 },
-    left1: { x: 29, y: 4, width:13, height: 16 },
-    left2: { x: 44, y: 3, width:13, height: 16 },
-    right1: { x: 1, y: 4, width: 13, height: 16 },
-    right2: { x: 15, y: 3, width: 13, height: 16 }
+    alphaColor: { r: 255, g: 255, b: 255 },
+    frames: {
+      up1: { x: 107, y: 4, width: 14, height: 16 },
+      up2: { x: 123, y: 3, width: 14, height: 16 },
+      up3: { x: 138, y: 3, width: 14, height: 16 },
+      down1: { x: 58, y: 4, width: 14, height: 16 },
+      down2: { x: 74, y: 3, width: 14, height: 16 },
+      down3: { x: 90, y: 3, width: 14, height: 16 },
+      left1: { x: 29, y: 4, width:13, height: 16 },
+      left2: { x: 44, y: 3, width:13, height: 16 },
+      right1: { x: 1, y: 4, width: 13, height: 16 },
+      right2: { x: 15, y: 3, width: 13, height: 16 }
+    }
   });
 
   private direction: Direction = null;
+  private isStopped: boolean = false;
   private movement: Point = { x: 0, y: 0 };
   private offset: Point = { x: 0, y: 0 };
   private characterPosition: Point = { x: 0, y: 0 };
@@ -81,10 +85,6 @@ export default class GscGameScene extends AbstractGameScene {
     this.update();
   }
 
-  private get isMoving(): boolean {
-    return this.remainingMoves > 0;
-  }
-
   private clampOffset(): void {
     // @todo use correct upper bounds
     this.offset.x = clamp(this.offset.x, 0, 16000);
@@ -97,13 +97,13 @@ export default class GscGameScene extends AbstractGameScene {
     const isAlternateYStep = Math.floor(this.offset.y / 16) % 2 === 0;
 
     if (direction === Direction.UP) {
-      return this.isMoving && isMidStep ? (isAlternateYStep ? 'up2' : 'up3') : 'up1';
+      return this.isMoving() && isMidStep ? (isAlternateYStep ? 'up2' : 'up3') : 'up1';
     } else if (direction === Direction.DOWN) {
-      return this.isMoving && isMidStep ? (isAlternateYStep ? 'down2' : 'down3') : 'down1';
+      return this.isMoving() && isMidStep ? (isAlternateYStep ? 'down2' : 'down3') : 'down1';
     } else if (direction === Direction.LEFT) {
-      return this.isMoving && isMidStep ? 'left2' : 'left1';
+      return this.isMoving() && isMidStep ? 'left2' : 'left1';
     } else if (direction === Direction.RIGHT) {
-      return this.isMoving && isMidStep ? 'right2' : 'right1';
+      return this.isMoving() && isMidStep ? 'right2' : 'right1';
     } else {
       return 'down1';
     }
@@ -111,8 +111,8 @@ export default class GscGameScene extends AbstractGameScene {
 
   private getCharacterPixelPosition(): Point {
     const characterOffset: Point = {
-      x: this.characterPosition.x * 16 - this.movement.x * this.remainingMoves,
-      y: this.characterPosition.y * 16 - this.movement.y * this.remainingMoves
+      x: this.characterPosition.x * 16 - (this.isStopped ? 0 : this.movement.x) * this.remainingMoves,
+      y: this.characterPosition.y * 16 - (this.isStopped ? 0 : this.movement.y) * this.remainingMoves
     };
 
     return {
@@ -131,6 +131,14 @@ export default class GscGameScene extends AbstractGameScene {
     } else {
       return Direction.DOWN;
     }
+  }
+
+  private getTileAtCharacterPosition(): GscTile {
+    return this.worldMap.getTileMap().getTile(this.characterPosition);
+  }
+
+  private isMoving(): boolean {
+    return this.remainingMoves > 0;
   }
 
   private isValidStartingPosition(position: Point): boolean {
@@ -157,9 +165,12 @@ export default class GscGameScene extends AbstractGameScene {
   private update = () => {
     requestAnimationFrame(this.update);
 
-    if (this.isMoving) {
-      this.offset.x += this.movement.x;
-      this.offset.y += this.movement.y;
+    if (this.isMoving()) {
+      // Continue movement (or animation) in the last cardinal direction
+      if (!this.isStopped) {
+        this.offset.x += this.movement.x;
+        this.offset.y += this.movement.y;
+      }
 
       this.clampOffset();
 
@@ -170,11 +181,19 @@ export default class GscGameScene extends AbstractGameScene {
 
       this.character.renderToCanvas(this.canvas, this.getCharacterPixelPosition(), this.getCharacterFrame());
     } else if (this.direction !== null) {
+      // Initiate movement in a cardinal direction
       this.movement = movementMap[this.direction];
       this.remainingMoves = 16;
 
       this.characterPosition.x += this.movement.x;
       this.characterPosition.y += this.movement.y;
+
+      this.isStopped = !isWalkableTile(this.getTileAtCharacterPosition());
+
+      if (this.isStopped) {
+        this.characterPosition.x -= this.movement.x;
+        this.characterPosition.y -= this.movement.y;
+      }
     }
   };
 }
