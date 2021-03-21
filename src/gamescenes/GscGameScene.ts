@@ -49,6 +49,10 @@ export default class GscGameScene extends AbstractGameScene {
   private offset: Point = { x: 0, y: 0 };
   private characterPosition: Point = { x: 0, y: 0 };
   private remainingMoves: number = 0;
+
+  private soundFx = {
+    bump: new AudioFile('./assets/gsc/bump.mp3')
+  };
   
   private soundtrack = new Soundtrack({
     route30: {
@@ -193,6 +197,8 @@ export default class GscGameScene extends AbstractGameScene {
       if (this.isStopped) {
         this.characterPosition.x -= this.movement.x;
         this.characterPosition.y -= this.movement.y;
+
+        this.soundFx.bump.play();
       }
     }
   };
