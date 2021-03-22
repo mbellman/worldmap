@@ -26,8 +26,34 @@ const movementMap = {
   [Direction.RIGHT]: { x: 1, y: 0 }
 };
 
+/**
+ * @internal
+ */
+enum MovementState {
+  WALKING,
+  CYCLING,
+  SURFING
+}
+
 export default class GscGameScene extends AbstractGameScene {
   private character = new Sprite('./assets/gsc/ethan.png', {
+    alphaColor: { r: 255, g: 255, b: 255 },
+    frames: {
+      up1: { x: 107, y: 4, width: 14, height: 16 },
+      up2: { x: 123, y: 3, width: 14, height: 16 },
+      up3: { x: 138, y: 3, width: 14, height: 16 },
+      down1: { x: 58, y: 4, width: 14, height: 16 },
+      down2: { x: 74, y: 3, width: 14, height: 16 },
+      down3: { x: 90, y: 3, width: 14, height: 16 },
+      left1: { x: 29, y: 4, width:13, height: 16 },
+      left2: { x: 44, y: 3, width:13, height: 16 },
+      right1: { x: 1, y: 4, width: 13, height: 16 },
+      right2: { x: 15, y: 3, width: 13, height: 16 }
+    }
+  });
+
+  // @todo add proper bicycle frames
+  private bicycle = new Sprite('./assets/gsc/ethan.png', {
     alphaColor: { r: 255, g: 255, b: 255 },
     frames: {
       up1: { x: 107, y: 4, width: 14, height: 16 },
@@ -46,6 +72,7 @@ export default class GscGameScene extends AbstractGameScene {
   private direction: Direction = null;
   private isStopped: boolean = false;
   private movement: Point = { x: 0, y: 0 };
+  private movementState: MovementState = MovementState.WALKING;
   private offset: Point = { x: 0, y: 0 };
   private characterPosition: Point = { x: 0, y: 0 };
   private remainingMoves: number = 0;
@@ -55,6 +82,10 @@ export default class GscGameScene extends AbstractGameScene {
   };
   
   private soundtrack = new Soundtrack({
+    bicycle: {
+      audio: new AudioFile('./assets/gsc/bicycle.mp3'),
+      loop: { start: 5.0, end: 30.0 }
+    },
     route30: {
       audio: new AudioFile('./assets/gsc/route-30.mp3'),
       loop: { start: 5.6722, end: 34.335 }
@@ -86,6 +117,17 @@ export default class GscGameScene extends AbstractGameScene {
       }
     });
 
+    document.addEventListener('keypress', event => {
+      // @todo make sure we can't switch our movement state mid-frame
+      if (event.key === ' ') {
+        this.soundtrack.play(this.isCycling() ? 'route30' : 'bicycle');
+
+        this.movementState = this.isCycling()
+          ? MovementState.WALKING
+          : MovementState.CYCLING;
+      }
+    });
+
     this.update();
   }
 
@@ -95,6 +137,7 @@ export default class GscGameScene extends AbstractGameScene {
     this.offset.y = clamp(this.offset.y, 0, 16000);
   }
 
+  // @todo have alternate frame determination for cycling/surfing
   private getCharacterFrame(): string {
     const direction = this.getMovementDirection();
     const isMidStep = this.remainingMoves <= 8;
@@ -137,12 +180,24 @@ export default class GscGameScene extends AbstractGameScene {
     }
   }
 
+  private getMovementSpeed(): number {
+    return this.isCycling() ? 4 : 1;
+  }
+
   private getTileAtCharacterPosition(): GscTile {
     return this.worldMap.getTileMap().getTile(this.characterPosition);
   }
 
+  private isCycling(): boolean {
+    return this.movementState === MovementState.CYCLING;
+  }
+
   private isMoving(): boolean {
     return this.remainingMoves > 0;
+  }
+
+  private isSurfing(): boolean {
+    return this.movementState === MovementState.SURFING;
   }
 
   private isValidStartingPosition(position: Point): boolean {
@@ -172,8 +227,8 @@ export default class GscGameScene extends AbstractGameScene {
     if (this.isMoving()) {
       // Continue movement (or animation) in the last cardinal direction
       if (!this.isStopped) {
-        this.offset.x += this.movement.x;
-        this.offset.y += this.movement.y;
+        this.offset.x += this.movement.x * this.getMovementSpeed();
+        this.offset.y += this.movement.y * this.getMovementSpeed();
       }
 
       this.clampOffset();
@@ -181,8 +236,9 @@ export default class GscGameScene extends AbstractGameScene {
       this.streamableMap.renderNextView(this.offset);
       this.streamableMap.renderToCanvas(this.canvas);
 
-      this.remainingMoves--;
+      this.remainingMoves -= this.getMovementSpeed();
 
+      // @todo use bicycle sprite while cycling
       this.character.renderToCanvas(this.canvas, this.getCharacterPixelPosition(), this.getCharacterFrame());
     } else if (this.direction !== null) {
       // Initiate movement in a cardinal direction

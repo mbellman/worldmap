@@ -133,8 +133,8 @@ export default class StreamableMap {
 
   public renderToCanvas(canvas: Canvas): void {
     canvas.blit(
-      this.targetCanvas.getElement(),
-      { x: 0, y: 0, width: this.targetCanvas.width, height: this.targetCanvas.height },
+      this.sourceCanvas.getElement(),
+      { x: 0, y: 0, width: this.sourceCanvas.width, height: this.sourceCanvas.height },
       { x: 0, y: 0, width: canvas.width, height: canvas.height }
     );
   }
