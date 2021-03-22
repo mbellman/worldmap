@@ -45,27 +45,26 @@ export default class GscGameScene extends AbstractGameScene {
       down1: { x: 58, y: 4, width: 14, height: 16 },
       down2: { x: 74, y: 3, width: 14, height: 16 },
       down3: { x: 90, y: 3, width: 14, height: 16 },
-      left1: { x: 29, y: 4, width:13, height: 16 },
-      left2: { x: 44, y: 3, width:13, height: 16 },
+      left1: { x: 29, y: 4, width: 13, height: 16 },
+      left2: { x: 44, y: 3, width: 13, height: 16 },
       right1: { x: 1, y: 4, width: 13, height: 16 },
       right2: { x: 15, y: 3, width: 13, height: 16 }
     }
   });
 
-  // @todo add proper bicycle frames
   private bicycle = new Sprite('./assets/gsc/ethan.png', {
     alphaColor: { r: 255, g: 255, b: 255 },
     frames: {
-      up1: { x: 107, y: 4, width: 14, height: 16 },
-      up2: { x: 123, y: 3, width: 14, height: 16 },
-      up3: { x: 138, y: 3, width: 14, height: 16 },
-      down1: { x: 58, y: 4, width: 14, height: 16 },
-      down2: { x: 74, y: 3, width: 14, height: 16 },
-      down3: { x: 90, y: 3, width: 14, height: 16 },
-      left1: { x: 29, y: 4, width:13, height: 16 },
-      left2: { x: 44, y: 3, width:13, height: 16 },
-      right1: { x: 1, y: 4, width: 13, height: 16 },
-      right2: { x: 15, y: 3, width: 13, height: 16 }
+      up1: { x: 67, y: 52, width: 14, height: 16 },
+      up2: { x: 50, y: 52, width: 14, height: 16 },
+      up3: { x: 84, y: 52, width: 14, height: 16 },
+      down1: { x: 18, y: 52, width: 14, height: 16 },
+      down2: { x: 1, y: 52, width: 15, height: 16 },
+      down3: { x: 33, y: 52, width: 15, height: 16 },
+      left1: { x: 118, y: 52, width: 16, height: 16 },
+      left2: { x: 100, y: 52, width: 16, height: 16 },
+      right1: { x: 138, y: 52, width: 16, height: 16 },
+      right2: { x: 156, y: 52, width: 16, height: 16 }
     }
   });
 
@@ -118,13 +117,14 @@ export default class GscGameScene extends AbstractGameScene {
     });
 
     document.addEventListener('keypress', event => {
-      // @todo make sure we can't switch our movement state mid-frame
-      if (event.key === ' ') {
+      if (event.key === ' ' && !this.isMoving()) {
         this.soundtrack.play(this.isCycling() ? 'route30' : 'bicycle');
 
         this.movementState = this.isCycling()
           ? MovementState.WALKING
           : MovementState.CYCLING;
+
+        this.redrawScene();
       }
     });
 
@@ -168,6 +168,10 @@ export default class GscGameScene extends AbstractGameScene {
     };
   }
 
+  private getCharacterSprite(): Sprite {
+    return this.isCycling() ? this.bicycle : this.character;
+  }
+
   private getMovementDirection(): Direction {
     if (this.movement.x < 0) {
       return Direction.LEFT;
@@ -207,6 +211,13 @@ export default class GscGameScene extends AbstractGameScene {
     );
   }
 
+  private redrawScene(): void {
+    this.streamableMap.renderNextView(this.offset);
+    this.streamableMap.renderToCanvas(this.canvas);
+
+    this.getCharacterSprite().renderToCanvas(this.canvas, this.getCharacterPixelPosition(), this.getCharacterFrame());
+  }
+
   private setStartingPosition(): void {
     while (!this.isValidStartingPosition(this.characterPosition)) {
       this.characterPosition = {
@@ -231,15 +242,10 @@ export default class GscGameScene extends AbstractGameScene {
         this.offset.y += this.movement.y * this.getMovementSpeed();
       }
 
-      this.clampOffset();
-
-      this.streamableMap.renderNextView(this.offset);
-      this.streamableMap.renderToCanvas(this.canvas);
-
       this.remainingMoves -= this.getMovementSpeed();
 
-      // @todo use bicycle sprite while cycling
-      this.character.renderToCanvas(this.canvas, this.getCharacterPixelPosition(), this.getCharacterFrame());
+      this.clampOffset();
+      this.redrawScene();
     } else if (this.direction !== null) {
       // Initiate movement in a cardinal direction
       this.movement = movementMap[this.direction];
